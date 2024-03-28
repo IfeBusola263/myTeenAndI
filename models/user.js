@@ -34,7 +34,7 @@ const userSchema = new dbClient.mongoose.Schema(
 	    type: Number,
 	    unique: true
 	},
-	posts: [Post]
+	posts: [dbClient.mongoose.model('Post').schema]
     });
 
 module.exports = dbClient.mongoose.model('User', userSchema);

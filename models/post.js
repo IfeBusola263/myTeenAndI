@@ -5,7 +5,7 @@ const postSchema = new dbClient.mongoose.Schema(
     {
 	text: String,
 	likes: Number,
-	comments: [Comment]
+	comments: [dbClient.mongoose.model('Comment').schema],
 	date: {
 	    type: Date,
 	    default: Date.now

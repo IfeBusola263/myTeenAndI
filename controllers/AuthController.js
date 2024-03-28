@@ -23,15 +23,41 @@ function _hashPass(password) {
 }
 
 function checkPass(password, hashedPass) {
-    bcrypt.compare(password, hashedPass)
+    return bcrypt.compare(password, hashedPass)
 	.then(res => res)
 	.catch(err => console.log(new Error(err)));
 }	
 
 export default class AuthController {
     static async logIn(req, res) {
-	const token = req.get('X-Token')
-	res.status(200);
+	// const token = req.get('X-Token')
+	const authParam = req.get('Authorization').split(' ')
+
+	if (authParam.length !== 2 || authParam[0] !== 'Basic') {
+	    res.status(400).json({error:"Wrong Authorization"});
+	    return;
+	}
+	 
+	const authString = Buffer.from(authParam[1], 'base64').toString('ascii');
+	const [username, password] = authString.split(':');
+	const userInfo = await dbClient.mongoose.model('User').findOne({ username }).exec();
+
+	if (!userInfo) {
+	    res.status(404).json({error: `User [${username}] Not Found`});
+	    return;
+	}
+
+	const passCheck = await checkPass(password, userInfo.password);
+		
+	if (!passCheck){
+	    res.status(404).json({error: "Wrong Password"});
+	    return;
+	}
+	const userToken = uuidv4();
+	const userRedisKey = `auth_${userToken}`;
+	await redisClient.set(userRedisKey, userInfo._id.toString(), 172800);
+	res.set('X-Token', userToken);
+	res.status(200).json({success: `Welcome ${username}`});
     }
 
     static async signUp(req, res) {
@@ -111,7 +137,7 @@ export default class AuthController {
 		return;
 	    }
 	    await redisClient.del(userRedisKey);
-	    res.status(204).json({"success": "You have successfully logged out"});
+	    res.status(200).json({"success": "You have successfully logged out"});
 	} catch (error) {
 	    console.log(error.message);
 	}   
