@@ -22,9 +22,9 @@ class RedisClient {
 	return value;
     }
 
-    async set(key, value) {
+    async set(key, value, expiration) {
 	const setter = promisify(this.client.set).bind(this.client);
-	await setter(key, value)
+	await setter(key, value, 'EX', expiration)
     }
 
     async del(key) {

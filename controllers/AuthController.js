@@ -1,3 +1,33 @@
+import redisClient from '../utils/redis';
+import dbClient from '../utils/db';
+import User from '../models/user';
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
+
+function _hashPass(password) {
+    return new Promise((resolve, reject) => {
+	bcrypt.genSalt(10, (err, salt) => {
+	    if (err) {
+		reject(err);
+	    } else {
+		bcrypt.hash(password, salt, (err, hash) => {
+		    if (err) {
+			reject(err);
+		    } else {
+			resolve(hash);
+		    }
+		});
+	    }
+	});
+    });
+}
+
+function checkPass(password, hashedPass) {
+    bcrypt.compare(password, hashedPass)
+	.then(res => res)
+	.catch(err => console.log(new Error(err)));
+}	
+
 export default class AuthController {
     static async logIn(req, res) {
 	const token = req.get('X-Token')
@@ -5,12 +35,85 @@ export default class AuthController {
     }
 
     static async signUp(req, res) {
-	const token = req.get('X-Token');
 	const { name, username, password, email, phoneNumber } = req.body
-	res.status(200);
+	if (!name) {
+	    res.status(400).json({error: "Name is required"})
+	    return;
+	}
+	if (!username) {
+	    res.status(400).json({error: "Please provide a username"})
+	    return;
+	}
+
+	const existingUserName = await dbClient.mongoose.model('User').findOne({ username }).exec();
+
+	if (existingUserName){
+	    res.status(400).json({error: `Username [${username}] already exists, try another one.` });
+	    return;
+	}
+	
+	if (!email) {
+	    res.status(400).json({error: "Missing email, please provide one"})
+	    return;
+	}
+
+	const existingUser = await dbClient.mongoose.model('User').findOne({ email }).exec();
+	if (existingUser) {
+	    res.status(400).json({error:"You already have an account, Please log in"});
+	    return;
+	}
+	
+	if (!password) {
+	    res.status(400).json({error:"Please Provide a Password"})
+	    return;
+	}
+
+	try {
+	    const newUser = new User({
+		name,
+		username,
+		email,
+		phoneNumber: phoneNumber ? phoneNumber : 0,
+		password: await _hashPass(password)
+	    });
+	    await newUser.save()
+
+	} catch(err) {
+	    console.log(err.message);
+	}
+
+	const nUser = await dbClient.mongoose.model('User').findOne({ email }).exec();
+
+	const userToken = uuidv4();
+	const redisKey = `auth_${userToken}`;
+	await redisClient.set(redisKey, nUser._id.toString(), 172800);
+	
+	res.set('X-Token', userToken);
+	    
+	res.status(200).json({success: `Welcome ${username}`});
     }
 
     static async logOut(req, res) {
-	res.status(200);
+	const token = req.get('X-Token');
+	const userRedisKey = `auth_${token}`;
+	const userId = await redisClient.get(userRedisKey);
+
+	if (!userId){
+	    res.status(401).json({error: "Unauthorized"});
+	    return;
+	}
+
+	try {
+	    const id = new dbClient.mongoose.Types.ObjectId(userId);
+	    const user = await dbClient.mongoose.model('User').findById(id).exec();
+	    if (!user) {
+		res.status(404).json({error: "No User Found"});
+		return;
+	    }
+	    await redisClient.del(userRedisKey);
+	    res.status(204).json({"success": "You have successfully logged out"});
+	} catch (error) {
+	    console.log(error.message);
+	}   
     }
 }
