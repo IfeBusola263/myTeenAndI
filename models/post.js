@@ -3,9 +3,13 @@ import Comment from './comment';
 
 const postSchema = new dbClient.mongoose.Schema(
     {
-	text: String,
-	likes: Number,
-	comments: [dbClient.mongoose.model('Comment').schema],
+	username: String,
+	body: String,
+	likes: {
+	    type: Number,
+	    default: 0,
+	},
+	comments: [Comment.schema],
 	date: {
 	    type: Date,
 	    default: Date.now

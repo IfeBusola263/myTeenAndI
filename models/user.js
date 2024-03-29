@@ -1,5 +1,6 @@
 import dbClient from '../utils/db';
 import Post from './post';
+import { isEmail } from 'validator';
 
 const userSchema = new dbClient.mongoose.Schema(
     {
@@ -7,12 +8,17 @@ const userSchema = new dbClient.mongoose.Schema(
 	email: {
 	    type: String,
 	    required: true,
-	    unique: true
+	    unique: true,
+	    validate: [isEmail, "Please enter a valid email address"] 
 	},
 	username: {
 	    type: String,
 	    required: true,
 	    unique: true
+	},
+	bio: {
+	    type: String,
+	    default: ""
 	},
 	createdAt: {
 	    type: Date,
@@ -34,7 +40,18 @@ const userSchema = new dbClient.mongoose.Schema(
 	    type: Number,
 	    unique: true
 	},
-	posts: [dbClient.mongoose.model('Post').schema]
+	posts: [Post.schema]
     });
+
+userSchema.pre('remove', function (next) {
+    console.log(`${this.name} is about to be deleted!`);
+    next();
+});
+
+userSchema.post('findOneAndDelete', function (doc, next) {
+    console.log(`${doc.name} has been deleted, We should find out why.`)
+    next();
+})
+
 
 module.exports = dbClient.mongoose.model('User', userSchema);

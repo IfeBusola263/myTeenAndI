@@ -40,7 +40,7 @@ export default class AuthController {
 	 
 	const authString = Buffer.from(authParam[1], 'base64').toString('ascii');
 	const [username, password] = authString.split(':');
-	const userInfo = await dbClient.mongoose.model('User').findOne({ username }).exec();
+	const userInfo = await User.findOne({ username }).exec();
 
 	if (!userInfo) {
 	    res.status(404).json({error: `User [${username}] Not Found`});
@@ -71,7 +71,7 @@ export default class AuthController {
 	    return;
 	}
 
-	const existingUserName = await dbClient.mongoose.model('User').findOne({ username }).exec();
+	const existingUserName = await User.findOne({ username }).exec();
 
 	if (existingUserName){
 	    res.status(400).json({error: `Username [${username}] already exists, try another one.` });
@@ -83,7 +83,7 @@ export default class AuthController {
 	    return;
 	}
 
-	const existingUser = await dbClient.mongoose.model('User').findOne({ email }).exec();
+	const existingUser = await User.findOne({ email }).exec();
 	if (existingUser) {
 	    res.status(400).json({error:"You already have an account, Please log in"});
 	    return;
@@ -108,7 +108,7 @@ export default class AuthController {
 	    console.log(err.message);
 	}
 
-	const nUser = await dbClient.mongoose.model('User').findOne({ email }).exec();
+	const nUser = await User.findOne({ email }).exec();
 
 	const userToken = uuidv4();
 	const redisKey = `auth_${userToken}`;
@@ -116,7 +116,7 @@ export default class AuthController {
 	
 	res.set('X-Token', userToken);
 	    
-	res.status(200).json({success: `Welcome ${username}`});
+	res.status(201).json({success: `Welcome ${username}`});
     }
 
     static async logOut(req, res) {
@@ -131,7 +131,7 @@ export default class AuthController {
 
 	try {
 	    const id = new dbClient.mongoose.Types.ObjectId(userId);
-	    const user = await dbClient.mongoose.model('User').findById(id).exec();
+	    const user = await User.findById(id).exec();
 	    if (!user) {
 		res.status(404).json({error: "No User Found"});
 		return;
