@@ -13,9 +13,15 @@ export default class UserController{
 	const userRedisKey = `auth_${token}`;
 	const userId = await redisClient.get(userRedisKey);
 
+	
 	if (!userId) {
-	    res.status(401).json({error: "Unauthorized Operation Please Log in."});
+	    res.status(401).json({error: "Unauthorized Operation Please Log in!"});
 	    return;
+	}
+
+	if (!uName){
+	    res.status(400).json({error: "Username is missing"});
+	    return
 	}
 
 	const userInfo = await User.findOne({ username: uName }).exec();
