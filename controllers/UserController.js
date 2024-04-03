@@ -25,8 +25,8 @@ export default class UserController{
 	    return;
 	}
 
-	const { name, username, email, bio, posts } = userInfo;
-	res.status(200).json({ name, username, email, bio, posts });
+	const { name, username, createdAt, email, bio, posts } = userInfo;
+	res.status(200).json({ name, username, createdAt, email, bio, posts });
     }
 
     static async getPosts(req, res) {

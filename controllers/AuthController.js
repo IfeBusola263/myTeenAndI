@@ -55,9 +55,6 @@ export default class AuthController {
 	    return;
 	}
 
-	const userRedisKey = `auth_${userToken}`;
-	const userId = await redisClient.get
-
 	const posts = await Post.find().lean().exec();
 	
 	const allPosts = posts.map((post) => {
@@ -67,6 +64,7 @@ export default class AuthController {
 	});
 	
 	const userToken = uuidv4();
+	const userRedisKey = `auth_${userToken}`;
 	await redisClient.set(userRedisKey, userInfo._id.toString(), 172800);
 	res.set('X-Token', userToken);
 	res.status(200).json({success: `Welcome ${username}`, posts: allPosts});
