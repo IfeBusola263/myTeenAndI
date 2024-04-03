@@ -85,6 +85,9 @@ export default class UserController{
 	const userRedisKey = `auth_${token}`;
 	const userId = await redisClient.get(userRedisKey);
 	const username = req.query.username;
+
+	if (!userId)
+	    res.status(401).json({error: "Unauthorized"});
 	
 	try {
 	    const userInfo = await User.findById(new ObjectId(userId)).exec();
