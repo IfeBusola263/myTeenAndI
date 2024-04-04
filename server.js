@@ -5,7 +5,7 @@ import cors from 'cors';
 const PORT = 3000;
 const HOST = 'localhost';
 const app = express();
-app.use(cors());
+app.use(cors({ allowedHeaders: 'X-Token'}));
 app.use(express.json())
 app.use('/', router);
 
