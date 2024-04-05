@@ -111,7 +111,7 @@ export default class UserController {
 
       await User.findByIdAndDelete(userInfo._id).exec();
       await redisClient.del(userRedisKey);
-      res.status(301).redirect('/');
+	res.status(204).json([]);
     } catch (err) {
       console.log(err);
     }

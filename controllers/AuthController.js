@@ -74,6 +74,7 @@ export default class AuthController {
     const {
       name, username, password, email, phoneNumber,
     } = req.body;
+      console.log(name);
     if (!name) {
       res.status(400).json({ error: 'Name is required' });
       return;
