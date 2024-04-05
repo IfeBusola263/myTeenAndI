@@ -49,9 +49,26 @@ My Teen and I aims to facilitate communication and collaboration among parents d
 - `POST /picture/remove`: Remove a profile picture (React and Node.js)
 
 ## Folder Structure
-
 ```
-myTeenAndI/
+MyTeenAndI/
+│
+├── client/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── myHooks/
+│   │   ├── styles/
+│   │   ├── App.jsx
+│   │   ├── CreatePost.jsx
+│   │   ├── Footer.jsx
+│   │   ├── Header.jsx
+│   │   ├── Home.jsx
+│   │   ├── Login.jsx
+│   │   ├── NavBar.jsx
+│   │   ├── Post.jsx
+│   │   ├── RootHome.jsx
+│   │   ├── SignUp.jsx
+│   │   └── UserDashboard.jsx
+│   └── package.json
 │
 ├── server.js
 ├── utils/
@@ -64,8 +81,8 @@ myTeenAndI/
 ├── routes/
 │   └── index.js
 └── package.json
-
 ```
+
 
 ## Schema
 
@@ -73,6 +90,8 @@ myTeenAndI/
 - Name
 - Username
 - Email
+- CreateAt
+- UpdatedAt
 - Password
 - Phone Number (optional)
 - Posts
@@ -80,11 +99,13 @@ myTeenAndI/
 ### Post
 - Body
 - Likes
+- Date
 - Comments
 
 ### Comment
 - Username
 - Comment
+- Date
 
 ## Technologies
 
